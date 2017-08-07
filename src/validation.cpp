@@ -1190,14 +1190,25 @@ bool IsInitialBlockDownload()
     LOCK(cs_main);
     if (latchToFalse.load(std::memory_order_relaxed))
         return false;
-    if (fImporting || fReindex)
+    if (fImporting || fReindex) {
+        LogPrintf("IsInitialBlockDownload() TRUE: fImporting || fReindex\n");
         return true;
-    if (chainActive.Tip() == NULL)
+    }
+    if (chainActive.Tip() == NULL) {
+        LogPrintf("IsInitialBlockDownload() TRUE: chainActive.Tip() == NULL\n");
         return true;
-    if (chainActive.Tip()->nChainWork < UintToArith256(chainParams.GetConsensus().nMinimumChainWork))
+    }
+    if (chainActive.Tip()->nChainWork < UintToArith256(chainParams.GetConsensus().nMinimumChainWork)) {
+        LogPrintf("IsInitialBlockDownload() TRUE: chainActive.Tip()->nChainWork < chainParams.GetConsensus().nMinimumChainWork\n");
+        LogPrintf("chainActive.Tip()->nChainWork:                 %s\n", chainActive.Tip()->nChainWork.ToString().c_str());
+        LogPrintf("chainParams.GetConsensus().nMinimumChainWork:  %s\n\n", chainParams.GetConsensus().nMinimumChainWork.ToString().c_str());
+        return false; // don't care about IBD for getblocktemplate during blockchain genesis
+        //return true;
+    }
+    if (chainActive.Tip()->GetBlockTime() < (GetTime() - nMaxTipAge)) {
+        LogPrintf("IsInitialBlockDownload() TRUE: chainActive.Tip()->GetBlockTime() < (GetTime() - nMaxTipAge))\n");
         return true;
-    if (chainActive.Tip()->GetBlockTime() < (GetTime() - nMaxTipAge))
-        return true;
+    }
     latchToFalse.store(true, std::memory_order_relaxed);
     return false;
 }
