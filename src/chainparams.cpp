@@ -34,27 +34,6 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
     genesis.nVersion = nVersion;
     genesis.vtx.push_back(MakeTransactionRef(std::move(txNew)));
     genesis.hashPrevBlock.SetNull();
-    /*
-    uint256 hashGenesisBlock = uint256S("0x01");
-    if (true && genesis.GetHash() != hashGenesisBlock)
-    {
-        printf("recalculating params for regtest.\n");
-        printf("old regtest genesis nonce: %u\n", genesis.nNonce);
-        printf("old regtest genesis hash:  %s\n", hashGenesisBlock.ToString().c_str());
-        printf("old regtest genesis PoWhash:  %s\n", genesis.GetPoWHash().ToString().c_str());
-        // deliberately empty for loop finds nonce value.
-        uint256 bnProofOfWorkLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
-        for(genesis.nNonce == 0; UintToArith256(genesis.GetPoWHash()) > UintToArith256(bnProofOfWorkLimit); genesis.nNonce++){ 
-            genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
-        }
-        printf("\n");
-        printf("new regtest genesis nonce: %u\n", genesis.nNonce);
-        printf("new regtest genesis hash: %s\n", genesis.GetHash().ToString().c_str());
-        printf("new regtest genesis PoW: %s\n", genesis.GetPoWHash().ToString().c_str());
-        printf("new regtest genesis merkle root: %s\n", genesis.hashMerkleRoot.ToString().c_str());
-    }
-    */
     genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
     return genesis;
 }
@@ -63,13 +42,8 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  * Build the genesis block. Note that the output of its generation
  * transaction cannot be spent since it did not originally exist in the
  * database.
- *
- * CBlock(hash=000000000019d6, ver=1, hashPrevBlock=00000000000000, hashMerkleRoot=4a5e1e, nTime=1231006505, nBits=1d00ffff, nNonce=2083236893, vtx=1)
- *   CTransaction(hash=4a5e1e, ver=1, vin.size=1, vout.size=1, nLockTime=0)
- *     CTxIn(COutPoint(000000, -1), coinbase 04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73)
- *     CTxOut(nValue=50.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B)
- *   vMerkleTree: 4a5e1e
- */
+ **/
+
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
     const char* pszTimestamp = "2017-08-05, Fortune: Bitcoin Rockets Past $3,000 to a New Record High";
@@ -93,10 +67,10 @@ public:
     CMainParams() {
         strNetworkID = "main";
         consensus.nSubsidyHalvingInterval = 1050000;
-        consensus.BIP34Height = 710000;
+        consensus.BIP34Height = 0;
         consensus.BIP34Hash = uint256S("fa09d204a83a768ed5a7c8d441fa62f2043abf420cff1226c7b4329aeb9d51cf");
-        consensus.BIP65Height = 918684; // bab3041e8977e0dc3eeff63fe707b92bde1dd449d8efafb248c27c8264cc311a
-        consensus.BIP66Height = 811879; // 7aceee012833fa8952f8835d8b1b3ae233cd6ab08fdb27a771d2bd7bdc491894
+        consensus.BIP65Height = 0; // a19d22b3f196f46492568e15fc2a65fbba22a474467ebec61d5998668fde535f
+        consensus.BIP66Height = 0; // a19d22b3f196f46492568e15fc2a65fbba22a474467ebec61d5998668fde535f
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); 
         consensus.nPowTargetTimespan = 60 * 60; // 1 hour
         consensus.nPowTargetSpacing = 2 * 60; // 2 minutes
@@ -119,10 +93,10 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = 1517356801; // January 31st, 2018
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0x000000000000000000000000000000000000000000000006805c7318ce2736c0");
+        consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000a33717");
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("0x1673fa904a93848eca83d5ca82c7af974511a7e640e22edc2976420744f2e56a"); //1155631
+        //consensus.defaultAssumeValid = uint256S("0x1673fa904a93848eca83d5ca82c7af974511a7e640e22edc2976420744f2e56a"); //1155631
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -160,7 +134,7 @@ public:
 
         checkpointData = (CCheckpointData) {
             boost::assign::map_list_of
-            (  0, uint256S("0x728a584305e814710d6ae9d5d7bd3a4e6652fed4618fa2825b8548f50db33875"))
+            (  0, uint256S("0xa19d22b3f196f46492568e15fc2a65fbba22a474467ebec61d5998668fde535f"))
         };
 
         chainTxData = ChainTxData{
@@ -248,7 +222,7 @@ public:
 
         checkpointData = (CCheckpointData) {
             boost::assign::map_list_of
-            ( 0, uint256S("0x47e927de5fd4ed9e50a7f80e0e4b52a69c3e5fb05fcb0ac7f27a973615ffe9cc")),
+            ( 0, uint256S("0x0d4355a768d7c6cba40a33ddda269469f29eab754307868c84075e2d3faf77db")),
         };
 
         chainTxData = ChainTxData{
@@ -319,7 +293,7 @@ public:
 
         checkpointData = (CCheckpointData){
             boost::assign::map_list_of
-            ( 0, uint256S("0xcb14537e0ae42b06a380b3883d7d603a424054b8e0bbc0f674ae5d680d7e2084"))
+            ( 0, uint256S("0x404345d0a838dcba7a15ef4eff19261b673e0168b40fb15170e95409355db7a7"))
         };
 
         chainTxData = ChainTxData{

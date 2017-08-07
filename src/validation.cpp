@@ -1171,6 +1171,13 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
         return 0;
 
     CAmount nSubsidy = 100 * COIN;
+
+    // 7.77% subsidy for VIZ development 
+    if(nHeight == 1)
+    {
+        nSubsidy = 17691640 * COIN;
+    }
+
     // Subsidy is cut in half every 1,050,000 blocks which will occur approximately every 1 year.
     nSubsidy >>= halvings;
     return nSubsidy;
@@ -1190,11 +1197,11 @@ bool IsInitialBlockDownload()
     if (latchToFalse.load(std::memory_order_relaxed))
         return false;
     if (fImporting || fReindex) {
-        LogPrintf("IsInitialBlockDownload() TRUE: fImporting || fReindex\n");
+        // LogPrintf("IsInitialBlockDownload() TRUE: fImporting || fReindex\n");
         return true;
     }
     if (chainActive.Tip() == NULL) {
-        LogPrintf("IsInitialBlockDownload() TRUE: chainActive.Tip() == NULL\n");
+        // LogPrintf("IsInitialBlockDownload() TRUE: chainActive.Tip() == NULL\n");
         return true;
     }
     if (chainActive.Tip()->nChainWork < UintToArith256(chainParams.GetConsensus().nMinimumChainWork)) {
@@ -1203,11 +1210,10 @@ bool IsInitialBlockDownload()
         LogPrintf("chainActive.Tip()->nChainWork:                 %s\n", chainActive.Tip()->nChainWork.ToString().c_str());
         LogPrintf("chainParams.GetConsensus().nMinimumChainWork:  %s\n\n", chainParams.GetConsensus().nMinimumChainWork.ToString().c_str());
         */
-        return false; // don't care about IBD for getblocktemplate during blockchain genesis
-        //return true;
+        return true;
     }
     if (chainActive.Tip()->GetBlockTime() < (GetTime() - nMaxTipAge)) {
-        LogPrintf("IsInitialBlockDownload() TRUE: chainActive.Tip()->GetBlockTime() < (GetTime() - nMaxTipAge))\n");
+        // LogPrintf("IsInitialBlockDownload() TRUE: chainActive.Tip()->GetBlockTime() < (GetTime() - nMaxTipAge))\n");
         return true;
     }
     latchToFalse.store(true, std::memory_order_relaxed);
