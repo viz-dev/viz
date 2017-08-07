@@ -1147,7 +1147,6 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
     }
 
     // Check the header
-    LogPrintf("Checking Proof of work with %s %u\n", block.GetPoWHash().ToString(), block.nBits);
     if (!CheckProofOfWork(block.GetPoWHash(), block.nBits, consensusParams))
         return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
 
@@ -2178,10 +2177,8 @@ void static UpdateTip(CBlockIndex *pindexNew, const CChainParams& chainParams) {
       log(chainActive.Tip()->nChainWork.getdouble())/log(2.0), (unsigned long)chainActive.Tip()->nChainTx,
       DateTimeStrFormat("%Y-%m-%d %H:%M:%S", chainActive.Tip()->GetBlockTime()),
       GuessVerificationProgress(chainParams.TxData(), chainActive.Tip()), pcoinsTip->DynamicMemoryUsage() * (1.0 / (1<<20)), pcoinsTip->GetCacheSize());
-    LogPrintf("%s: chainActive.Tip()->nChainWork=%s\n", __func__, chainActive.Tip()->nChainWork.ToString().c_str());
     if (!warningMessages.empty())
         LogPrintf(" warning='%s'", boost::algorithm::join(warningMessages, ", "));
-    LogPrintf("\n");
 
 }
 
@@ -2994,6 +2991,8 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
 {
     const int nHeight = pindexPrev == NULL ? 0 : pindexPrev->nHeight + 1;
     // Check proof of work
+    // LogPrintf("ContextCheck expecting block.nBits: %u === %u\n", block.nBits, GetNextWorkRequired(pindexPrev, &block, consensusParams));
+    // LogPrintf("ContextCheck expecting block.nBits: %08x === %08x\n", block.nBits, GetNextWorkRequired(pindexPrev, &block, consensusParams));
     if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
         return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect proof of work");
 

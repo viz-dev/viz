@@ -34,6 +34,9 @@ unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const CBlock
 
     if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 || BlockLastSolved->nHeight < PastBlocksMin) 
 	{
+        if (BlockLastSolved == NULL) LogPrintf("BlockLastSovled == NULL\n");
+        if (BlockLastSolved->nHeight == 0) LogPrintf("BlockLastSovled->nHeight == 0\n");
+        if (BlockLastSolved->nHeight < PastBlocksMin) LogPrintf("BlockLastSovled->nHeight < PastBlocksMin\n");
         return UintToArith256(params.powLimit).GetCompact();
     }
 
@@ -76,33 +79,28 @@ unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const CBlock
 
 	arith_uint256 bnOld = bnNew;
    
-    const int64_t nLongTimeLimit = 2 * 2 * 60;
-    const int64_t nLongTimeStep = 2 * 60;
-
     // Retarget
     bnNew *= nActualTimespan;
     bnNew /= _nTargetTimespan;
 
-    LogPrintf("pblock->nTime: %u\npindexLast->GetBlockTime(): %u\ndifference: %u\nnLongTimeLimit: %u\n", 
-            pblock->nTime, pindexLast->GetBlockTime(), pblock->nTime-pindexLast->GetBlockTime(), nLongTimeLimit);
     // DELTA retarget if block time is greater than nLongTimeLimit
+    const int64_t nLongTimeLimit = 2 * 16 * 60;
+    const int64_t nLongTimeStep = 15 * 60;
+
     if ((pblock->nTime - pindexLast->GetBlockTime()) > nLongTimeLimit)
     {
-        LogPrintf("nLongTimeLimit check passed, retargeting due to 32+min block\n");
         // Reduce in a linear fashion at first, and then start to ramp up with a gradual exponential curve (to catch massive hash extinction events)
         int64_t nNumMissedSteps = ((pblock->nTime - pindexLast->GetBlockTime()) / nLongTimeStep);
+        //LogPrintf("nLongTimeLimit check passed, retargeting %u steps due to %f-minute block\n", nNumMissedSteps, (pblock->nTime - pindexLast->GetBlockTime())/60);
         if (nNumMissedSteps <= 5)
             bnNew *= nNumMissedSteps;
         else
             bnNew *= 5 + (int64_t)std::floor(std::pow((float)1.14, (float)nNumMissedSteps - 5) + 0.5);
-
-        // Print difficulty reset in debug.log
-        LogPrintf("Maximum block time hit, significant difficulty cut: %08x %s\n", bnNew.GetCompact(), bnNew.ToString().c_str());
     }
 
-	LogPrintf("DGW: Height %f, NewDiff %08x     nActualTimespan %f    nTargetTimespan %f   Before %s, After %s \r\n",		
+	/*LogPrintf("DGW: Height %f, NewDiff %08x     nActualTimespan %f    nTargetTimespan %f   Before %s, After %s \r\n",		
 		(double)pindexLast->nHeight, bnNew.GetCompact(),	(double)nActualTimespan,(double)_nTargetTimespan, bnOld.ToString(), bnNew.ToString());
-
+    */
     if (bnNew > UintToArith256(params.powLimit))
 	{
         bnNew = UintToArith256(params.powLimit);
@@ -130,9 +128,10 @@ unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nF
 
     // Retarget
     arith_uint256 bnNew;
-    arith_uint256 bnOld;
+    // arith_uint256 bnOld;
     bnNew.SetCompact(pindexLast->nBits);
-    bnOld = bnNew;
+    // bnOld = bnNew;
+
     // Viz: intermediate uint256 can overflow by 1 bit
     const arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
     bool fShift = bnNew.bits() > bnPowLimit.bits() - 1;
