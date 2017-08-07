@@ -1199,9 +1199,11 @@ bool IsInitialBlockDownload()
         return true;
     }
     if (chainActive.Tip()->nChainWork < UintToArith256(chainParams.GetConsensus().nMinimumChainWork)) {
+        /* 
         LogPrintf("IsInitialBlockDownload() TRUE: chainActive.Tip()->nChainWork < chainParams.GetConsensus().nMinimumChainWork\n");
         LogPrintf("chainActive.Tip()->nChainWork:                 %s\n", chainActive.Tip()->nChainWork.ToString().c_str());
         LogPrintf("chainParams.GetConsensus().nMinimumChainWork:  %s\n\n", chainParams.GetConsensus().nMinimumChainWork.ToString().c_str());
+        */
         return false; // don't care about IBD for getblocktemplate during blockchain genesis
         //return true;
     }
@@ -2176,6 +2178,7 @@ void static UpdateTip(CBlockIndex *pindexNew, const CChainParams& chainParams) {
       log(chainActive.Tip()->nChainWork.getdouble())/log(2.0), (unsigned long)chainActive.Tip()->nChainTx,
       DateTimeStrFormat("%Y-%m-%d %H:%M:%S", chainActive.Tip()->GetBlockTime()),
       GuessVerificationProgress(chainParams.TxData(), chainActive.Tip()), pcoinsTip->DynamicMemoryUsage() * (1.0 / (1<<20)), pcoinsTip->GetCacheSize());
+    LogPrintf("%s: chainActive.Tip()->nChainWork=%s\n", __func__, chainActive.Tip()->nChainWork.ToString().c_str());
     if (!warningMessages.empty())
         LogPrintf(" warning='%s'", boost::algorithm::join(warningMessages, ", "));
     LogPrintf("\n");
