@@ -76,8 +76,8 @@ unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const CBlock
 
 	arith_uint256 bnOld = bnNew;
    
-    const int64_t nLongTimeLimit = 2 * 16 * 60;
-    const int64_t nLongTimeStep = 15 * 60;
+    const int64_t nLongTimeLimit = 2 * 5 * 60;
+    const int64_t nLongTimeStep = 4 * 60;
 
     // Retarget
     bnNew *= nActualTimespan;
