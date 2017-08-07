@@ -1210,7 +1210,7 @@ bool IsInitialBlockDownload()
         LogPrintf("chainActive.Tip()->nChainWork:                 %s\n", chainActive.Tip()->nChainWork.ToString().c_str());
         LogPrintf("chainParams.GetConsensus().nMinimumChainWork:  %s\n\n", chainParams.GetConsensus().nMinimumChainWork.ToString().c_str());
         */
-        return true;
+        return false;
     }
     if (chainActive.Tip()->GetBlockTime() < (GetTime() - nMaxTipAge)) {
         // LogPrintf("IsInitialBlockDownload() TRUE: chainActive.Tip()->GetBlockTime() < (GetTime() - nMaxTipAge))\n");
@@ -1710,12 +1710,17 @@ int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Para
     int32_t nVersion = VERSIONBITS_TOP_BITS;
 
     for (int i = 0; i < (int)Consensus::MAX_VERSION_BITS_DEPLOYMENTS; i++) {
+        LogPrintf("ComputeBlockVersion iteration %u\n", i);
         ThresholdState state = VersionBitsState(pindexPrev, params, (Consensus::DeploymentPos)i, versionbitscache);
         if (state == THRESHOLD_LOCKED_IN || state == THRESHOLD_STARTED) {
+            if (state == THRESHOLD_LOCKED_IN) LogPrintf("%s THRESHOLD_LOCKED_IN\n", __func__);
+            else if (state == THRESHOLD_STARTED) LogPrintf("%s THRESHOLD_STARTED\n", __func__);
+            else LogPrintf("%s THRESHOLD_? = %u\n", __func__, state);
             nVersion |= VersionBitsMask(params, (Consensus::DeploymentPos)i);
         }
     }
 
+    LogPrintf("nVersion: %u\n", nVersion);
     return nVersion;
 }
 
@@ -2144,8 +2149,11 @@ void static UpdateTip(CBlockIndex *pindexNew, const CChainParams& chainParams) {
         for (int bit = 0; bit < VERSIONBITS_NUM_BITS; bit++) {
             WarningBitsConditionChecker checker(bit);
             ThresholdState state = checker.GetStateFor(pindex, chainParams.GetConsensus(), warningcache[bit]);
+            LogPrintf("ThersholdState = %u\n", state);
             if (state == THRESHOLD_ACTIVE || state == THRESHOLD_LOCKED_IN) {
+                if (state == THRESHOLD_LOCKED_IN) LogPrintf("THRESHOLD_LOCKED_IN\n");
                 if (state == THRESHOLD_ACTIVE) {
+                    LogPrintf("THRESHOLD_ACTIVE\n");
                     std::string strWarning = strprintf(_("Warning: unknown new rules activated (versionbit %i)"), bit);
                     SetMiscWarning(strWarning);
                     if (!fWarned) {
@@ -3052,6 +3060,12 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, const Co
         CScript expect = CScript() << nHeight;
         if (block.vtx[0]->vin[0].scriptSig.size() < expect.size() ||
             !std::equal(expect.begin(), expect.end(), block.vtx[0]->vin[0].scriptSig.begin())) {
+            if (block.vtx[0]->vin[0].scriptSig.size() < expect.size())
+                LogPrintf("scriptSigSize mismatch: (%u) != %u\n", block.vtx[0]->vin[0].scriptSig.size(), expect.size());
+            if (!std::equal(expect.begin(), expect.end(), block.vtx[0]->vin[0].scriptSig.begin())) 
+                LogPrintf("expect.begin doesn't match expect.end\n");
+
+            LogPrintf("block version: %u, prevhash: %s, hash: %s\n", block.nVersion, block.hashPrevBlock.ToString().c_str(), block.GetHash().ToString().c_str());
             return state.DoS(100, false, REJECT_INVALID, "bad-cb-height", false, "block height mismatch in coinbase");
         }
     }

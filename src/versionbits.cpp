@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "versionbits.h"
+#include "util.h"
 
 #include "consensus/params.h"
 
@@ -28,6 +29,8 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     int64_t nTimeStart = BeginTime(params);
     int64_t nTimeTimeout = EndTime(params);
 
+    LogPrintf("    GetStateFor checking block > %u < \n", &pindexPrev->nHeight);
+    LogPrintf("    nPeriod: %u\nnThreshold: %u\nnTimeStart: %u\nnTimeTimeout: %u\n", nPeriod, nThreshold, nTimeStart, nTimeTimeout);
     // A block's state is always the same as that of the first of its period, so it is computed based on a pindexPrev whose height equals a multiple of nPeriod - 1.
     if (pindexPrev != NULL) {
         pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - ((pindexPrev->nHeight + 1) % nPeriod));
@@ -62,6 +65,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
 
         switch (state) {
             case THRESHOLD_DEFINED: {
+                LogPrintf("    THRESHOLD_DEFINED\n", __func__);
                 if (pindexPrev->GetMedianTimePast() >= nTimeTimeout) {
                     stateNext = THRESHOLD_FAILED;
                 } else if (pindexPrev->GetMedianTimePast() >= nTimeStart) {
@@ -70,6 +74,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
                 break;
             }
             case THRESHOLD_STARTED: {
+                LogPrintf("    THRESHOLD_STARTED\n", __func__);
                 if (pindexPrev->GetMedianTimePast() >= nTimeTimeout) {
                     stateNext = THRESHOLD_FAILED;
                     break;
@@ -89,12 +94,17 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
                 break;
             }
             case THRESHOLD_LOCKED_IN: {
+                LogPrintf("    THRESHOLD_LOCKED_IN\n", __func__);
                 // Always progresses into ACTIVE.
                 stateNext = THRESHOLD_ACTIVE;
                 break;
             }
-            case THRESHOLD_FAILED:
+            case THRESHOLD_FAILED: {
+                LogPrintf("    THRESHOLD_LOCKED_IN\n", __func__);
+                break;
+            }
             case THRESHOLD_ACTIVE: {
+                LogPrintf("    THRESHOLD_ACTIVE\n", __func__);
                 // Nothing happens, these are terminal states.
                 break;
             }
