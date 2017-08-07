@@ -28,13 +28,12 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     int nThreshold = Threshold(params);
     int64_t nTimeStart = BeginTime(params);
     int64_t nTimeTimeout = EndTime(params);
+    LogPrintf("    GSF nPeriod: %u nThreshold: %u nTimeStart: %u nTimeTimeout: %u\n", nPeriod, nThreshold, nTimeStart, nTimeTimeout);
 
-    LogPrintf("    GetStateFor checking block > %u < \n", &pindexPrev->nHeight);
-    LogPrintf("    nPeriod: %u\nnThreshold: %u\nnTimeStart: %u\nnTimeTimeout: %u\n", nPeriod, nThreshold, nTimeStart, nTimeTimeout);
     // A block's state is always the same as that of the first of its period, so it is computed based on a pindexPrev whose height equals a multiple of nPeriod - 1.
     if (pindexPrev != NULL) {
         pindexPrev = pindexPrev->GetAncestor(pindexPrev->nHeight - ((pindexPrev->nHeight + 1) % nPeriod));
-    }
+    } 
 
     // Walk backwards in steps of nPeriod to find a pindexPrev whose information is known
     std::vector<const CBlockIndex*> vToCompute;
@@ -61,11 +60,12 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
     while (!vToCompute.empty()) {
         ThresholdState stateNext = state;
         pindexPrev = vToCompute.back();
+        LogPrintf("       checking block %s\n", pindexPrev->GetBlockHash().ToString());
         vToCompute.pop_back();
 
         switch (state) {
             case THRESHOLD_DEFINED: {
-                LogPrintf("    THRESHOLD_DEFINED\n", __func__);
+                LogPrintf("        THRESHOLD_DEFINED\n");
                 if (pindexPrev->GetMedianTimePast() >= nTimeTimeout) {
                     stateNext = THRESHOLD_FAILED;
                 } else if (pindexPrev->GetMedianTimePast() >= nTimeStart) {
@@ -74,7 +74,7 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
                 break;
             }
             case THRESHOLD_STARTED: {
-                LogPrintf("    THRESHOLD_STARTED\n", __func__);
+                LogPrintf("        THRESHOLD_STARTED\n");
                 if (pindexPrev->GetMedianTimePast() >= nTimeTimeout) {
                     stateNext = THRESHOLD_FAILED;
                     break;
@@ -94,17 +94,17 @@ ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex*
                 break;
             }
             case THRESHOLD_LOCKED_IN: {
-                LogPrintf("    THRESHOLD_LOCKED_IN\n", __func__);
+                LogPrintf("        THRESHOLD_LOCKED_IN\n");
                 // Always progresses into ACTIVE.
                 stateNext = THRESHOLD_ACTIVE;
                 break;
             }
             case THRESHOLD_FAILED: {
-                LogPrintf("    THRESHOLD_LOCKED_IN\n", __func__);
+                LogPrintf("        THRESHOLD_LOCKED_IN\n");
                 break;
             }
             case THRESHOLD_ACTIVE: {
-                LogPrintf("    THRESHOLD_ACTIVE\n", __func__);
+                LogPrintf("        THRESHOLD_ACTIVE\n");
                 // Nothing happens, these are terminal states.
                 break;
             }
