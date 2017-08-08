@@ -34,9 +34,6 @@ unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const CBlock
 
     if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 || BlockLastSolved->nHeight < PastBlocksMin) 
 	{
-        if (BlockLastSolved == NULL) LogPrintf("BlockLastSovled == NULL\n");
-        if (BlockLastSolved->nHeight == 0) LogPrintf("BlockLastSovled->nHeight == 0\n");
-        if (BlockLastSolved->nHeight < PastBlocksMin) LogPrintf("BlockLastSovled->nHeight < PastBlocksMin\n");
         return UintToArith256(params.powLimit).GetCompact();
     }
 

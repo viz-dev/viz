@@ -66,6 +66,7 @@ int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParam
     if (nOldTime < nNewTime)
         pblock->nTime = nNewTime;
 
+    LogPrintf("miner.cpp: UpdateTime() going into GetNextWorkRequired()...\n");
     // Updating time can change work required on testnet:
     if (consensusParams.fPowAllowMinDifficultyBlocks)
         pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, consensusParams);
@@ -149,8 +150,9 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     CBlockIndex* pindexPrev = chainActive.Tip();
     nHeight = pindexPrev->nHeight + 1;
 
+    LogPrintf("        CreateNewBlock calling ComputeBlockVersion() now\n");
     pblock->nVersion = ComputeBlockVersion(pindexPrev, chainparams.GetConsensus());
-    LogPrintf("ComputeBlockVersion = %u\n", pblock->nVersion);
+    LogPrintf("        CreateNewBlock ComputeBlockVersion returned %u\n", pblock->nVersion);
 
     // -regtest only: allow overriding block.nVersion with
     // -blockversion=N to test forking scenarios

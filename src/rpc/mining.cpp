@@ -472,7 +472,6 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
     }
 
     if (IsInitialBlockDownload()) {
-        LogPrintf("getblocktemplate throwing RPC error RPC_CLIENT_IN_INITIAL_DOWNLOAD, ibd\n");
         throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Viz is downloading blocks...");
     }
 
@@ -568,7 +567,6 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
 
     // NOTE: If at some point we support pre-segwit miners post-segwit-activation, this needs to take segwit support into consideration
     const bool fPreSegWit = (THRESHOLD_ACTIVE != VersionBitsState(pindexPrev, consensusParams, Consensus::DEPLOYMENT_SEGWIT, versionbitscache));
-    if (fPreSegWit) LogPrintf("getblocktemplate fPreSegwit=TRUE\n");
 
     UniValue aCaps(UniValue::VARR); aCaps.push_back("proposal");
 
@@ -627,26 +625,20 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
     UniValue vbavailable(UniValue::VOBJ);
     for (int j = 0; j < (int)Consensus::MAX_VERSION_BITS_DEPLOYMENTS; ++j) {
         Consensus::DeploymentPos pos = Consensus::DeploymentPos(j);
-        if (pos == Consensus::DEPLOYMENT_CSV) LogPrintf("Testing Consensus::DEPLOYMENT_CSV...\n");
-        else if (pos == Consensus::DEPLOYMENT_SEGWIT) LogPrintf("Testing Consensus::DEPLOYMENT_CSV...\n");
-        else LogPrintf("Testing Consensus::DEPLOYMENT_? = %u...\n", pos);
+
         ThresholdState state = VersionBitsState(pindexPrev, consensusParams, pos, versionbitscache);
         switch (state) {
             case THRESHOLD_DEFINED: 
-                LogPrintf("%s THRESHOLD_DEFINED\n", __func__);
                 break;
             case THRESHOLD_FAILED:
-                LogPrintf("%s THRESHOLD_FAILED\n", __func__);
                 // Not exposed to GBT at all
                 break;
             case THRESHOLD_LOCKED_IN:
-                LogPrintf("%s THRESHOLD_LOCKED_IN\n", __func__);
                 // Ensure bit is set in block version
                 pblock->nVersion |= VersionBitsMask(consensusParams, pos);
                 // FALL THROUGH to get vbavailable set...
             case THRESHOLD_STARTED:
             {
-                LogPrintf("%s THRESHOLD_STARTED\n", __func__);
                 const struct BIP9DeploymentInfo& vbinfo = VersionBitsDeploymentInfo[pos];
                 vbavailable.push_back(Pair(gbt_vb_name(pos), consensusParams.vDeployments[pos].bit));
                 if (setClientRules.find(vbinfo.name) == setClientRules.end()) {
@@ -659,7 +651,6 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
             }
             case THRESHOLD_ACTIVE:
             {
-                LogPrintf("%s THRESHOLD_ACTIVE\n", __func__);
                 // Add to rules only
                 const struct BIP9DeploymentInfo& vbinfo = VersionBitsDeploymentInfo[pos];
                 aRules.push_back(gbt_vb_name(pos));
@@ -675,7 +666,6 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
         }
     }
     result.push_back(Pair("version", pblock->nVersion));
-    LogPrintf("%s %u version: \n", __func__, pblock->nVersion);
     result.push_back(Pair("rules", aRules));
     result.push_back(Pair("vbavailable", vbavailable));
     result.push_back(Pair("vbrequired", int(0)));
