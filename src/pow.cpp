@@ -88,7 +88,7 @@ unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const CBlock
     {
         // Reduce in a linear fashion at first, and then start to ramp up with a gradual exponential curve (to catch massive hash extinction events)
         int64_t nNumMissedSteps = ((pblock->nTime - pindexLast->GetBlockTime()) / nLongTimeStep);
-        //LogPrintf("nLongTimeLimit check passed, retargeting %u steps due to %f-minute block\n", nNumMissedSteps, (pblock->nTime - pindexLast->GetBlockTime())/60);
+        LogPrintf("nLongTimeLimit check passed, retargeting %u steps due to %f-minute block\n", nNumMissedSteps, (pblock->nTime - pindexLast->GetBlockTime())/60);
         if (nNumMissedSteps <= 5)
             bnNew *= nNumMissedSteps;
         else
