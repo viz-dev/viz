@@ -39,8 +39,8 @@ unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const CBlock
 
     for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) 
 	{
-        Log.Printf("pblock hash = %s, i: %d, BlockReading && BlockReading->nHeight == %d\n", 
-                pblockheader.GetHash().ToString().c_str(), i, (BlockReading && BlockReading->nHeight));
+        LogPrintf("pblock hash = %s, i: %d, BlockReading && BlockReading->nHeight == %d\n", 
+                pblock->GetHash().ToString().c_str(), i, (BlockReading && BlockReading->nHeight));
 
         if (PastBlocksMax > 0 && i > PastBlocksMax) { break; }
         CountBlocks++;
