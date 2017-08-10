@@ -479,7 +479,7 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
 
     if (!lpval.isNull())
     {
-        // Wait to respond until either the best block changes OR  5 seconds have passed 
+        // Wait to respond until either the best block changes, OR  5 seconds have passed 
         uint256 hashWatchedChain;
         boost::system_time checktxtime;
 

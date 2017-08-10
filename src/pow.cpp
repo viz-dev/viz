@@ -13,7 +13,7 @@
 #include "util.h"
 #include <math.h>
 
-unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::Params& params) 
+unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const uint32_t nTime, const Consensus::Params& params) 
 {
     /* DeltaGravityWave Difficulty Re-Adjustment Algorithm 
      * By: VIZ core development team
@@ -87,11 +87,11 @@ unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const CBlock
     const int64_t nLongTimeLimit = 2 * 16 * 60;
     const int64_t nLongTimeStep = 15 * 60;
 
-    if ((pblock->nTime - pindexLast->GetBlockTime()) > nLongTimeLimit)
+    if ((nTime - pindexLast->GetBlockTime()) > nLongTimeLimit)
     {
         // Reduce in a linear fashion at first, and then start to ramp up with a gradual exponential curve (to catch massive hash extinction events)
-        int64_t nNumMissedSteps = ((pblock->nTime - pindexLast->GetBlockTime()) / nLongTimeStep);
-        LogPrintf("nLongTimeLimit check passed, retargeting %u steps due to %f-minute block\n", nNumMissedSteps, (pblock->nTime - pindexLast->GetBlockTime())/60);
+        int64_t nNumMissedSteps = ((nTime - pindexLast->GetBlockTime()) / nLongTimeStep);
+        LogPrintf("nLongTimeLimit check passed, retargeting %u steps due to %f-minute block\n", nNumMissedSteps, (nTime - pindexLast->GetBlockTime())/60);
         if (nNumMissedSteps <= 5)
             bnNew *= nNumMissedSteps;
         else
@@ -112,7 +112,7 @@ unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const CBlock
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
     // VIZ: GetNextWorkRequired returns the result of DeltaGravityWave
-    return DeltaGravityWave(pindexLast, pblock, params);
+    return DeltaGravityWave(pindexLast, pblock->nTime, params);
 }
 
 unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)
