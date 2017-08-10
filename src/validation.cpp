@@ -1716,23 +1716,15 @@ int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Para
     // 2: DEPLOYMENT_SEGWIT
     // 3: MAX_VERSION_BITS_DEPLOYMENTS
     for (int i = 0; i < (int)Consensus::MAX_VERSION_BITS_DEPLOYMENTS; i++) {
-
-        // Debug print
-        switch (i) {
-            case 0: LogPrintf("    ComputeBlockVersion() checking deployment of DEPLOYMENT_TESTDUMMY\n");
-            case 1: LogPrintf("    ComputeBlockVersion() checking deployment of DEPLOYMENT_CSV\n");
-            case 2: LogPrintf("    ComputeBlockVersion() checking deployment of DEPLOYMENT_SEGWIT\n");
-        }
-
         ThresholdState state = VersionBitsState(pindexPrev, params, (Consensus::DeploymentPos)i, versionbitscache);
 
         // Debug print
         switch (state) {
-            case THRESHOLD_DEFINED: LogPrintf("    ComputeBlockVersion() state == THRESHOLD_DEFINED\n");
-            case THRESHOLD_STARTED: LogPrintf("    ComputeBlockVersion() state == THRESHOLD_STARTED\n");
-            case THRESHOLD_LOCKED_IN: LogPrintf("    ComputeBlockVersion() state == THRESHOLD_LOCKED_IN\n");
-            case THRESHOLD_FAILED: LogPrintf("    ComputeBlockVersion() state == THRESHOLD_FAILED\n");
-            case THRESHOLD_ACTIVE: LogPrintf("    ComputeBlockVersion() state == THRESHOLD_ACTIVE\n");
+            case THRESHOLD_DEFINED: LogPrintf("    ComputeBlockVersion() i == %d and state == THRESHOLD_DEFINED\n", i);
+            case THRESHOLD_STARTED: LogPrintf("    ComputeBlockVersion() i == %d and state == THRESHOLD_STARTED\n", i);
+            case THRESHOLD_LOCKED_IN: LogPrintf("    ComputeBlockVersion() i == %d and state == THRESHOLD_LOCKED_IN\n", i);
+            case THRESHOLD_FAILED: LogPrintf("    ComputeBlockVersion() i == %d and state == THRESHOLD_FAILED\n", i);
+            case THRESHOLD_ACTIVE: LogPrintf("    ComputeBlockVersion() i == %d and state == THRESHOLD_ACTIVE\n", i);
         }
         if (state == THRESHOLD_LOCKED_IN || state == THRESHOLD_STARTED) {
             nVersion |= VersionBitsMask(params, (Consensus::DeploymentPos)i);
