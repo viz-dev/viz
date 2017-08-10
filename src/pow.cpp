@@ -16,7 +16,7 @@
 unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::Params& params) 
 {
     /* DeltaGravityWave Difficulty Re-Adjustment Algorithm 
-     * By: VIZ core team
+     * By: VIZ core development team
      *
      * Based on a combination of: 
      * -- DarkGravity v3, written by Evan Duffield 
@@ -26,7 +26,7 @@ unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const CBlock
     const CBlockIndex *BlockReading = pindexLast;
     int64_t nActualTimespan = 0;
     int64_t LastBlockTime = 0;
-    int64_t PastBlocksMin = 4; 
+    int64_t PastBlocksMin = 20; 
     int64_t PastBlocksMax = 4; 
     int64_t CountBlocks = 0;
     arith_uint256 PastDifficultyAverage;
@@ -39,6 +39,9 @@ unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const CBlock
 
     for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) 
 	{
+        Log.Printf("pblock hash = %s, i: %d, BlockReading && BlockReading->nHeight == %d\n", 
+                pblockheader.GetHash().ToString().c_str(), i, (BlockReading && BlockReading->nHeight));
+
         if (PastBlocksMax > 0 && i > PastBlocksMax) { break; }
         CountBlocks++;
 
@@ -74,7 +77,7 @@ unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const CBlock
         nActualTimespan = _nTargetTimespan*2;
     }
 
-	// arith_uint256 bnOld = bnNew;
+	arith_uint256 bnOld = bnNew;
    
     // Retarget
     bnNew *= nActualTimespan;
@@ -95,9 +98,9 @@ unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const CBlock
             bnNew *= 5 + (int64_t)std::floor(std::pow((float)1.14, (float)nNumMissedSteps - 5) + 0.5);
     }
 
-	/*LogPrintf("DGW: Height %f, NewDiff %08x     nActualTimespan %f    nTargetTimespan %f   Before %s, After %s \r\n",		
+	LogPrintf("DGW: Height %f, NewDiff %08x     nActualTimespan %f    nTargetTimespan %f   Before %s, After %s \r\n",		
 		(double)pindexLast->nHeight, bnNew.GetCompact(),	(double)nActualTimespan,(double)_nTargetTimespan, bnOld.ToString(), bnNew.ToString());
-    */
+    
     if (bnNew > UintToArith256(params.powLimit))
 	{
         bnNew = UintToArith256(params.powLimit);
