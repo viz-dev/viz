@@ -1707,15 +1707,39 @@ VersionBitsCache versionbitscache;
 int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Params& params)
 {
     LOCK(cs_main);
+    // nVersion defaults to 0x20000000UL
     int32_t nVersion = VERSIONBITS_TOP_BITS;
 
+    // DeploymentPos
+    // 0: DEPLOYMENT_TESTDUMMY
+    // 1: DEPLOYMENT_CSV
+    // 2: DEPLOYMENT_SEGWIT
+    // 3: MAX_VERSION_BITS_DEPLOYMENTS
     for (int i = 0; i < (int)Consensus::MAX_VERSION_BITS_DEPLOYMENTS; i++) {
+
+        // Debug print
+        switch (i) {
+            case 0: LogPrintf("    ComputeBlockVersion() checking deployment of DEPLOYMENT_TESTDUMMY\n");
+            case 1: LogPrintf("    ComputeBlockVersion() checking deployment of DEPLOYMENT_CSV\n");
+            case 2: LogPrintf("    ComputeBlockVersion() checking deployment of DEPLOYMENT_SEGWIT\n");
+        }
+
         ThresholdState state = VersionBitsState(pindexPrev, params, (Consensus::DeploymentPos)i, versionbitscache);
+
+        // Debug print
+        switch (state) {
+            case THRESHOLD_DEFINED: LogPrintf("    ComputeBlockVersion() state == THRESHOLD_DEFINED\n");
+            case THRESHOLD_STARTED: LogPrintf("    ComputeBlockVersion() state == THRESHOLD_STARTED\n");
+            case THRESHOLD_LOCKED_IN: LogPrintf("    ComputeBlockVersion() state == THRESHOLD_LOCKED_IN\n");
+            case THRESHOLD_FAILED: LogPrintf("    ComputeBlockVersion() state == THRESHOLD_FAILED\n");
+            case THRESHOLD_ACTIVE: LogPrintf("    ComputeBlockVersion() state == THRESHOLD_ACTIVE\n");
+        }
         if (state == THRESHOLD_LOCKED_IN || state == THRESHOLD_STARTED) {
             nVersion |= VersionBitsMask(params, (Consensus::DeploymentPos)i);
         }
     }
 
+    LogPrintf("    ComputeBlockVersion() returning %08x\n", nVersion);
     return nVersion;
 }
 
@@ -2999,8 +3023,18 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
 {
     const int nHeight = pindexPrev == NULL ? 0 : pindexPrev->nHeight + 1;
     // Check proof of work
-    if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
+    LogPrintf("*****  ContextualCheckBlockHeader sending GetNextWorkRequired, expecting block.nBits = %08x\n", block.nBits);
+    uint32_t checkBits = GetNextWorkRequired(pindexPrev, &block, consensusParams);
+
+    // make sure there is no conversion weirdness due to integer conversion
+    unsigned int checkBits_2 = GetNextWorkRequired(pindexPrev, &block, consensusParams);
+    LogPrintf("***** ContextualCheckBlockHeader checkBits = %08x (%u), checkBits_2 = %08x (%u)\n", checkBits, checkBits, checkBits_2, checkBits_2);
+    if (block.nBits != checkBits_2) LogPrintf("***** ContextualCheckBlockHeader block.nBits != checkBits_2 also\n");
+
+    if (block.nBits != checkBits) {
+        LogPrintf("***** ContextualCheckBlockHeader got block.nBits = %08x\n", checkBits);
         return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect proof of work");
+    }
 
     // Check timestamp against prev
     if (block.GetBlockTime() <= pindexPrev->GetMedianTimePast())

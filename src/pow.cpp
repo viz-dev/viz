@@ -39,8 +39,8 @@ unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const CBlock
 
     for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) 
 	{
-        LogPrintf("pblock hash = %s, i: %d, BlockReading && BlockReading->nHeight == %d\n", 
-                pblock->GetHash().ToString().c_str(), i, (BlockReading && BlockReading->nHeight));
+        //LogPrintf("pblock hash = %s, i: %d, BlockReading && BlockReading->nHeight == %d\n", 
+        //        pblock->GetHash().ToString().c_str(), i, (BlockReading && BlockReading->nHeight));
 
         if (PastBlocksMax > 0 && i > PastBlocksMax) { break; }
         CountBlocks++;
@@ -111,6 +111,7 @@ unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const CBlock
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
+    // VIZ: GetNextWorkRequired returns the result of DeltaGravityWave
     return DeltaGravityWave(pindexLast, pblock, params);
 }
 
