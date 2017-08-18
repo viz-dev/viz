@@ -1719,19 +1719,19 @@ int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Para
         ThresholdState state = VersionBitsState(pindexPrev, params, (Consensus::DeploymentPos)i, versionbitscache);
 
         // Debug print
+        /*
         switch (state) {
             case THRESHOLD_DEFINED: LogPrintf("    ComputeBlockVersion() i == %d and state == THRESHOLD_DEFINED\n", i);
             case THRESHOLD_STARTED: LogPrintf("    ComputeBlockVersion() i == %d and state == THRESHOLD_STARTED\n", i);
             case THRESHOLD_LOCKED_IN: LogPrintf("    ComputeBlockVersion() i == %d and state == THRESHOLD_LOCKED_IN\n", i);
             case THRESHOLD_FAILED: LogPrintf("    ComputeBlockVersion() i == %d and state == THRESHOLD_FAILED\n", i);
             case THRESHOLD_ACTIVE: LogPrintf("    ComputeBlockVersion() i == %d and state == THRESHOLD_ACTIVE\n", i);
-        }
+        }*/
         if (state == THRESHOLD_LOCKED_IN || state == THRESHOLD_STARTED) {
             nVersion |= VersionBitsMask(params, (Consensus::DeploymentPos)i);
         }
     }
 
-    LogPrintf("    ComputeBlockVersion() returning %08x\n", nVersion);
     return nVersion;
 }
 
@@ -2178,7 +2178,7 @@ void static UpdateTip(CBlockIndex *pindexNew, const CChainParams& chainParams) {
         {
             int32_t nExpectedVersion = ComputeBlockVersion(pindex->pprev, chainParams.GetConsensus());
             if (pindex->nVersion > VERSIONBITS_LAST_OLD_BLOCK_VERSION && (pindex->nVersion & ~nExpectedVersion) != 0) {
-                LogPrintf("  >> pindex->nVersion: %08x, ~nExpectedVersion: %08x\n", pindex->nVersion, ~nExpectedVersion);
+                //LogPrintf("  >> pindex->nVersion: %08x, ~nExpectedVersion: %08x\n", pindex->nVersion, ~nExpectedVersion);
                 ++nUpgraded;
             }
             pindex = pindex->pprev;
@@ -3014,17 +3014,9 @@ std::vector<unsigned char> GenerateCoinbaseCommitment(CBlock& block, const CBloc
 bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& state, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev, int64_t nAdjustedTime)
 {
     const int nHeight = pindexPrev == NULL ? 0 : pindexPrev->nHeight + 1;
+
     // Check proof of work
-    LogPrintf("*****  ContextualCheckBlockHeader sending GetNextWorkRequired, expecting block.nBits = %08x\n", block.nBits);
-    uint32_t checkBits = GetNextWorkRequired(pindexPrev, &block, consensusParams);
-
-    // make sure there is no conversion weirdness due to integer conversion
-    unsigned int checkBits_2 = GetNextWorkRequired(pindexPrev, &block, consensusParams);
-    LogPrintf("***** ContextualCheckBlockHeader checkBits = %08x (%u), checkBits_2 = %08x (%u)\n", checkBits, checkBits, checkBits_2, checkBits_2);
-    if (block.nBits != checkBits_2) LogPrintf("***** ContextualCheckBlockHeader block.nBits != checkBits_2 also\n");
-
-    if (block.nBits != checkBits) {
-        LogPrintf("***** ContextualCheckBlockHeader got block.nBits = %08x\n", checkBits);
+    if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams)) {
         return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect proof of work");
     }
 

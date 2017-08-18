@@ -91,15 +91,15 @@ unsigned int static DeltaGravityWave(const CBlockIndex* pindexLast, const uint32
     {
         // Reduce in a linear fashion at first, and then start to ramp up with a gradual exponential curve (to catch massive hash extinction events)
         int64_t nNumMissedSteps = ((nTime - pindexLast->GetBlockTime()) / nLongTimeStep);
-        LogPrintf("nLongTimeLimit check passed, retargeting %u steps due to %f-minute block\n", nNumMissedSteps, (nTime - pindexLast->GetBlockTime())/60);
+        //LogPrintf("nLongTimeLimit check passed, retargeting %u steps due to %f-minute block\n", nNumMissedSteps, (nTime - pindexLast->GetBlockTime())/60);
         if (nNumMissedSteps <= 5)
             bnNew *= nNumMissedSteps;
         else
             bnNew *= 5 + (int64_t)std::floor(std::pow((float)1.14, (float)nNumMissedSteps - 5) + 0.5);
     }
 
-	LogPrintf("DGW: Height %f, NewDiff %08x     nActualTimespan %f    nTargetTimespan %f   Before %s, After %s \r\n",		
-		(double)pindexLast->nHeight, bnNew.GetCompact(),	(double)nActualTimespan,(double)_nTargetTimespan, bnOld.ToString(), bnNew.ToString());
+	//LogPrintf("DGW: Height %f, NewDiff %08x     nActualTimespan %f    nTargetTimespan %f   Before %s, After %s \r\n",		
+	//	(double)pindexLast->nHeight, bnNew.GetCompact(),	(double)nActualTimespan,(double)_nTargetTimespan, bnOld.ToString(), bnNew.ToString());
     
     if (bnNew > UintToArith256(params.powLimit))
 	{
